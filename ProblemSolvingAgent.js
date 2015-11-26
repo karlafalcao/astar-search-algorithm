@@ -1,46 +1,9 @@
 "use strict";
 
-//var ProblemSolvingAgent = {
-//	actions: {
-//		       'up' : 	function(nodeState){},
-//		     'right': 	function(nodeState){},
-//			  'down': 	function(nodeState){},
-//			  'left':	function(nodeState){},
-//		  'up-right': 	function(nodeState){},
-//		   'up-left':	function(nodeState){},
-//		'down-right':	function(nodeState){},
-//		 'down-left':	function(nodeState){},
-//	},
-//	node: {
-//		     parent:	{},
-//		     action:	{},
-//		      state:	{}, //Node resultant?
-//		      depth:	1,
-//		   pathCost:	0,
-//	},
-//	fringe: {
-//		      queue:	[],
-//		       sort:	function(queue){},
-//		  	isEmpty:	function(queue){},
-//		  insertAll:	function(nodeList){},
-//		     insert:	function(node){},
-//				pop:	function(){},
-//	},
-//	problem: {
-//		initialState:	{}, //A node
-//		   goalState:	{}, //A node
-//		 successorFn:	function(state){},
-//		    goalTest:	function(nodeState){},
-//			makeNode:	function(parent, action){},
-//		      search:	function(){},
-//		    solution:	function(node){} //Segue de acoes obtidas seguindo os ponteiros do pai(parent) de volta para a raiz
-//	},
-//
-//}
-
 //$Point
 
 function Point(x, y) {
+	var self = this;
 	this.x = x || 0;
 	this.y = y || 0;
 };
@@ -55,12 +18,12 @@ Point.prototype.sub = function(v) {
 	return new Point(this.x - v.x, this.y - v.y);
 };
 
-Point.prototype.distSq = function() {
+Point.prototype.lenSq = function() {
 	return this.x*this.x + this.y*this.y;
 };
 
-Point.prototype.dist = function() {
-	return Math.sqrt(this.distSq());
+Point.prototype.len = function() {
+	return Math.sqrt(this.lenSq());
 };
 
 Point.prototype.perp = function() {
@@ -78,26 +41,26 @@ Point.prototype.norm = function() {
 Point.prototype.move = function(movement){
 
 	var result = this.add(movement);
-
-	if (!result.isValid()) {
-		return null
-	}
-
 	return result;
 };
 
-Point.prototype.isValid = function(){
-	if (this.x > 10 || this.y > 10) {
-		return false;
-	}
-	return true;
+Point.prototype.dist = function(v) {
+	return this.sub(v).len();
 };
+
+Point.prototype.equalsTo = function(v){
+	if (this.x === v.x && this.y === v.y) {
+		return true;
+	}
+	return false;
+};
+
 
 //$Node prototype
 
 function Node (state, parent, action, pathCost, depth) {
 	this.state = state || new Point();
-	this.parent = parent || '' ;
+	this.parent = parent || {};
 	this.action = action || '' ;
 	this.pathCost = pathCost || 0 ;
 	this.depth = depth || 0 ;
@@ -110,30 +73,12 @@ Node.prototype.pathCost = null;
 Node.prototype.depth = null;
 
 
-Node.prototype.expand = function() {
-	var successors = [];
-
-	for (var actionName in ACTIONS) {
-		var action = ACTIONS[actionName];
-
-		var result = this.state.move(action.movement);
-
-		if (!result) continue;
-
-		var pathCost = this.pathCost + action.cost;
-
-		var depth = this.depth + 1;
-
-		var successor = new Node(result, this, actionName, pathCost, depth);
-
-		successors.push(successor);
+Node.prototype.solution = function() {
+	if (this.depth === 0) {
+		return [this.state];
 	}
 
-	return successors;
-};
-
-Node.prototype.solution = function() {
-
+	return new Array(this.state).concat(this.parent.solution());
 };
 
 //$Fringe prototype
@@ -141,14 +86,35 @@ Node.prototype.solution = function() {
 function Fringe(queue) {
 	this.queue = queue || [];
 }
-Fringe.prototype.queue = null;
+Fringe.prototype.queue = null; // Contains Nodes
 
-Fringe.prototype.sort =	function(queue){};
-Fringe.prototype.isEmpty =	function(queue){};
-Fringe.prototype.insert = function(node){};
-Fringe.prototype.insertAll =	function(nodeList){};
-Fringe.prototype.pop = function(){};
+Fringe.prototype.sort =	function(){
+	this.queue.sort(function(n1, n2){
+		return n1.pathCost - n2.pathCost;
+	});
 
+
+};
+
+Fringe.prototype.isEmpty =	function(queue){
+	return this.queue.length === 0;
+};
+
+Fringe.prototype.insert = function(node){
+	this.queue.push(node);
+};
+
+Fringe.prototype.insertAll = function(nodes){
+	for (var i in nodes) {
+		this.insert(nodes[i]);
+	}
+};
+
+Fringe.prototype.pop = function(){
+	return this.queue.shift();
+};
+
+//$ACTIONS constant
 var ACTIONS = {
 	'up' 		: 	{
 		movement: new Point(0, 1),
@@ -171,7 +137,7 @@ var ACTIONS = {
 		cost	: 1.4
 	},
 	'up-left'	:	{
-		movement: new Point(1, -1),
+		movement: new Point(-1, 1),
 		cost	: 1.4
 	},
 	'down-right':	{
@@ -186,10 +152,88 @@ var ACTIONS = {
 
 //$ProblemSolvingAgent
 
-function ProblemSolvingAgent() {}
+function ProblemSolvingAgent(initialState, goalState, deniedStates) {
+	this.initialState = initialState || new Point();
+	this.goalState = goalState || new Point();
+	this.deniedStates = deniedStates || [];
+}
 
 ProblemSolvingAgent.prototype.initialState = null;
 ProblemSolvingAgent.prototype.goalState = null;
-ProblemSolvingAgent.prototype.search = function() {};
-ProblemSolvingAgent.prototype.goalStateTest = function() {};
-ProblemSolvingAgent.prototype.makeNode = function() {};
+ProblemSolvingAgent.prototype.deniedStates = null;
+
+ProblemSolvingAgent.prototype.isOverflow = function(state) {
+	if (state.x > 10 || state.y > 10 || state.x < 0 || state.y < 0) {
+		return true;
+	}
+
+	return true;
+};
+
+ProblemSolvingAgent.prototype.isDenied = function(state) {
+	return this.deniedStates.some(function(denied){
+		return denied.equalsTo(p)
+	})
+};
+
+ProblemSolvingAgent.prototype.expand = function(node) {
+	var successors = [];
+
+	for (var actionName in ACTIONS) {
+		var action = ACTIONS[actionName];
+
+		var stateResult = node.state.move(action.movement);
+
+		if (this.isOverflow(stateResult) || this.isDenied(stateResult)) continue;
+
+		var pathCost = node.pathCost + action.cost + stateResult.dist(this.goalState);
+
+		var depth = node.depth + 1;
+
+		var successor = new Node(stateResult, node, actionName, pathCost, depth);
+
+		successors.push(successor);
+	}
+
+	return successors;
+};
+
+ProblemSolvingAgent.prototype.AEstrela = function() {
+	var node;
+	var initialNode = new Node(this.initialState);
+	var fringe = new Fringe();
+	fringe.insert(initialNode);
+
+	while (true) {
+		if (fringe.isEmpty()) {
+			return false;
+		}
+		//Makes initial node
+		node = fringe.pop();
+
+		if (this.goalTest(node.state)) {
+			return node.solution();
+		}
+
+		fringe.insertAll(this.expand(node));
+		fringe.sort();
+	}
+};
+
+ProblemSolvingAgent.prototype.goalTest = function(state) {
+	return this.goalState.equalsTo(state);
+};
+
+function init() {
+	var initial = new Point(0,0);
+
+	var goal = new Point(1,1);
+
+	var problemSolvingAgent = new ProblemSolvingAgent(initial, goal);
+
+	var result = problemSolvingAgent.AEstrela();
+	console.log(result);
+
+}
+
+//init();
