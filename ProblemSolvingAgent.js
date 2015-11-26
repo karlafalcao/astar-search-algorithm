@@ -92,8 +92,6 @@ Fringe.prototype.sort =	function(){
 	this.queue.sort(function(n1, n2){
 		return n1.pathCost - n2.pathCost;
 	});
-
-
 };
 
 Fringe.prototype.isEmpty =	function(queue){
@@ -156,24 +154,36 @@ function ProblemSolvingAgent(initialState, goalState, deniedStates) {
 	this.initialState = initialState || new Point();
 	this.goalState = goalState || new Point();
 	this.deniedStates = deniedStates || [];
+	this.closedStates = [];
 }
 
 ProblemSolvingAgent.prototype.initialState = null;
 ProblemSolvingAgent.prototype.goalState = null;
 ProblemSolvingAgent.prototype.deniedStates = null;
+ProblemSolvingAgent.prototype.closedStates = null;
+
+ProblemSolvingAgent.prototype.isClosed = function(state) {
+	return this.closedStates.some(function(closed){
+		return closed.equalsTo(state);
+	});
+};
+
+ProblemSolvingAgent.prototype.insertClosed = function(state) {
+	return this.closedStates.push(state);
+};
 
 ProblemSolvingAgent.prototype.isOverflow = function(state) {
-	if (state.x > 10 || state.y > 10 || state.x < 0 || state.y < 0) {
+	if (state.x > 9 || state.y > 9 || state.x < 0 || state.y < 0) {
 		return true;
 	}
 
-	return true;
+	return false;
 };
 
 ProblemSolvingAgent.prototype.isDenied = function(state) {
 	return this.deniedStates.some(function(denied){
-		return denied.equalsTo(p)
-	})
+		return denied.equalsTo(state);
+	});
 };
 
 ProblemSolvingAgent.prototype.expand = function(node) {
@@ -200,6 +210,7 @@ ProblemSolvingAgent.prototype.expand = function(node) {
 
 ProblemSolvingAgent.prototype.AEstrela = function() {
 	var node;
+	var successors;
 	var initialNode = new Node(this.initialState);
 	var fringe = new Fringe();
 	fringe.insert(initialNode);
@@ -212,11 +223,18 @@ ProblemSolvingAgent.prototype.AEstrela = function() {
 		node = fringe.pop();
 
 		if (this.goalTest(node.state)) {
+
 			return node.solution();
 		}
 
-		fringe.insertAll(this.expand(node));
-		fringe.sort();
+		if (!this.isClosed(node.state)) {
+			this.insertClosed(node.state);
+
+			successors = this.expand(node);
+
+			fringe.insertAll(successors);
+			fringe.sort();
+		}
 	}
 };
 
