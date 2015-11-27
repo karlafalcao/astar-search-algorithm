@@ -13,7 +13,11 @@
 </head>
 <body onload="startSpace()">
 <svg id="svg-space" xmlns="http://www.w3.org/2000/svg"></svg>
-<input type="text" id="weight" value="1">
+<p>Drag and drop the red(initial State) and blue(Goal State) to change their positions</p>
+<label for="weight">
+	Set Weight for <pre>wA*</pre>
+	<input type="text" id="weight" value="1">
+</label>
 <button onclick="start()">Start Search</button>
 <script>
 
