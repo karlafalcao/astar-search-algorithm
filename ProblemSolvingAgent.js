@@ -74,6 +74,8 @@ Node.prototype.depth = null;
 
 
 Node.prototype.solution = function() {
+	space.drawRec(space.createId('sol', this.state.x, this.state.y), this.state.x, this.state.y, '#ffcc00', 'solution');
+
 	if (this.depth === 0) {
 		return [this.state];
 	}
@@ -104,7 +106,9 @@ Fringe.prototype.insert = function(node){
 
 Fringe.prototype.insertAll = function(nodes){
 	for (var i in nodes) {
-		this.insert(nodes[i]);
+		var node = nodes[i]
+		this.insert(node);
+		space.drawRec(space.createId('sol', node.state.x, node.state.y), node.state.x, node.state.y, '#23d400', 'solution');
 	}
 };
 
@@ -150,10 +154,11 @@ var ACTIONS = {
 
 //$ProblemSolvingAgent
 
-function ProblemSolvingAgent(initialState, goalState, deniedStates) {
+function ProblemSolvingAgent(initialState, goalState, weight) {
 	this.initialState = initialState || new Point();
 	this.goalState = goalState || new Point();
-	this.deniedStates = deniedStates || [];
+	this.weight = weight || 0;
+	this.deniedStates = [];
 	this.closedStates = [];
 }
 
@@ -161,6 +166,7 @@ ProblemSolvingAgent.prototype.initialState = null;
 ProblemSolvingAgent.prototype.goalState = null;
 ProblemSolvingAgent.prototype.deniedStates = null;
 ProblemSolvingAgent.prototype.closedStates = null;
+
 
 ProblemSolvingAgent.prototype.isClosed = function(state) {
 	return this.closedStates.some(function(closed){
@@ -170,6 +176,12 @@ ProblemSolvingAgent.prototype.isClosed = function(state) {
 
 ProblemSolvingAgent.prototype.insertClosed = function(state) {
 	return this.closedStates.push(state);
+};
+
+ProblemSolvingAgent.prototype.setDeniedStates = function(states) {
+	for (var i=0; i<states.length; i++) {
+		this.deniedStates.push(states[i]);
+	}
 };
 
 ProblemSolvingAgent.prototype.isOverflow = function(state) {
@@ -196,7 +208,7 @@ ProblemSolvingAgent.prototype.expand = function(node) {
 
 		if (this.isOverflow(stateResult) || this.isDenied(stateResult)) continue;
 
-		var pathCost = node.pathCost + action.cost + stateResult.dist(this.goalState);
+		var pathCost = node.pathCost + action.cost + (stateResult.dist(this.goalState) * this.weight);
 
 		var depth = node.depth + 1;
 
@@ -229,8 +241,8 @@ ProblemSolvingAgent.prototype.AEstrela = function() {
 
 		if (!this.isClosed(node.state)) {
 			this.insertClosed(node.state);
-
 			successors = this.expand(node);
+			console.log(node);
 
 			fringe.insertAll(successors);
 			fringe.sort();

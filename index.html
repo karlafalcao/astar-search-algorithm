@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<script src="ProblemSolvingAgent.js"></script>
+	<script src="Space.js"></script>
+	<style>
+		#svg-space {
+			transform-origin: 50% 50%;
+		}
+	</style>
+</head>
+<body onload="startSpace()">
+<svg id="svg-space" xmlns="http://www.w3.org/2000/svg"></svg>
+<input type="text" id="weight" value="1">
+<button onclick="start()">Start Search</button>
+<script>
+
+//MAIN ##########################
+	var space;
+	var initialAgent;
+	var goalAgent;
+
+	function startSpace() {
+
+		space = new Space('http://www.w3.org/2000/svg', 30, 10);
+
+		space.draw();
+
+		space.setEvents();
+
+		initialAgent = new Agent('ini', new Point(0,0), '#FF002B');
+		initialAgent.drawInSpace(space);
+		initialAgent.bindDragNDrop(space);
+
+		goalAgent = new Agent('goal', new Point(9,9), '#0000FF');
+		goalAgent.drawInSpace(space);
+		goalAgent.bindDragNDrop(space);
+
+		return space;
+	}
+
+
+	var start = function() {
+		space.clearPath();
+
+		space.moveFromTo(null,initialAgent.state, goalAgent.state);
+
+		initialAgent.showInSpace(space);
+
+		goalAgent.showInSpace(space);
+
+	}
+
+</script>
+</body>
+</html>
