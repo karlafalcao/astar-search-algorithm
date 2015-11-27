@@ -185,8 +185,6 @@ Space.prototype.clearPath = function() {
 
 	while (els.length > 0) {
 		Array.prototype.forEach.call(els, function(el) {
-			// Do stuff with the element
-			console.log(el.tagName);
 			self.removeElement(el);
 		});
 		els = document.getElementsByClassName('solution');

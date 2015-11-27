@@ -90,9 +90,11 @@ function Fringe(queue) {
 }
 Fringe.prototype.queue = null; // Contains Nodes
 
-Fringe.prototype.sort =	function(){
+Fringe.prototype.sort =	function(problem){
 	this.queue.sort(function(n1, n2){
-		return n1.pathCost - n2.pathCost;
+		var h1 =  n1.state.dist(problem.goalState) * problem.weight;
+		var h2 =  n2.state.dist(problem.goalState) * problem.weight;
+		return (n1.pathCost + h1) - (n2.pathCost + h2);
 	});
 };
 
@@ -101,12 +103,12 @@ Fringe.prototype.isEmpty =	function(queue){
 };
 
 Fringe.prototype.insert = function(node){
-	this.queue.push(node);
+	this.queue.unshift(node);
 };
 
 Fringe.prototype.insertAll = function(nodes){
 	for (var i in nodes) {
-		var node = nodes[i]
+		var node = nodes[i];
 		this.insert(node);
 		space.drawRec(space.createId('sol', node.state.x, node.state.y), node.state.x, node.state.y, '#23d400', 'solution');
 	}
@@ -206,9 +208,10 @@ ProblemSolvingAgent.prototype.expand = function(node) {
 
 		var stateResult = node.state.move(action.movement);
 
-		if (this.isOverflow(stateResult) || this.isDenied(stateResult)) continue;
+		if (this.isOverflow(stateResult) || this.isDenied(stateResult) || this.isClosed(stateResult)) continue;
 
-		var pathCost = node.pathCost + action.cost + (stateResult.dist(this.goalState) * this.weight);
+		var pathCost = node.pathCost + action.cost;
+		pathCost = Math.floor(pathCost);
 
 		var depth = node.depth + 1;
 
@@ -242,10 +245,9 @@ ProblemSolvingAgent.prototype.AEstrela = function() {
 		if (!this.isClosed(node.state)) {
 			this.insertClosed(node.state);
 			successors = this.expand(node);
-			console.log(node);
-
+			
 			fringe.insertAll(successors);
-			fringe.sort();
+			fringe.sort(this);
 		}
 	}
 };
