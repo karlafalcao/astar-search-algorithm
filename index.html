@@ -28,11 +28,11 @@
 
 	function startSpace() {
 
-		space = new Space('http://www.w3.org/2000/svg', 30, 10);
+		space = new Space('http://www.w3.org/2000/svg');
 
 		space.draw();
 
-		space.setEvents();
+		space.bindClickEvent();
 
 		initialAgent = new Agent('ini', new Point(0,0), '#FF002B');
 		initialAgent.drawInSpace(space);
@@ -55,7 +55,7 @@
 
 		goalAgent.showInSpace(space);
 
-	}
+	};
 
 </script>
 </body>

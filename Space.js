@@ -1,20 +1,22 @@
-function Space(svg, sqLen, sqQty, walls) {
+function Space(svg, scale, dim, border, color) {
 	this.svg = svg || '';
-	this.sqLen = sqLen || 60;
-	this.sqQty = sqQty || 10;
-	this.walls = walls || [];
+	this.scale = scale || 60;
+	this.dim = dim || new Point(10, 10);
+	this.border = border || 0;
+	this.walls = [];
+	this.color = color || 'rgba(250,226,76,.6)';
 
 	this.svgEl = document.getElementsByTagNameNS(this.svg, 'svg')[0];
 
-	this.svgEl.setAttributeNS(null, 'width', String(sqLen * sqQty + 20));
-	this.svgEl.setAttributeNS(null, 'height', String(sqLen * sqQty + 20));
+	this.svgEl.setAttributeNS(null, 'width', String(this.scale * this.dim.x + this.border * 2));
+	this.svgEl.setAttributeNS(null, 'height', String(this.scale * this.dim.y + this.border * 2));
 }
 
 Space.prototype.draw = function() {
 
-	for (var x = 0; x < this.sqQty; x ++) {
-		for (var y = 0; y < this.sqQty; y ++) {
-			this.drawRec(this.createId('bg',x,y), x, y, 'rgba(250,226,76,.6)', 'bg');
+	for (var x = 0; x < this.dim.x; x ++) {
+		for (var y = 0; y < this.dim.y; y ++) {
+			this.drawRec(this.createId('bg',x,y), x, y, this.color, 'bg');
 		}
 	}
 };
@@ -39,10 +41,10 @@ Space.prototype.drawRec = function (id, x, y, color, cssClass){
 
 	var rect = document.createElementNS(this.svg, 'rect');
 	rect.setAttributeNS(null, 'id', id);
-	rect.setAttributeNS(null, 'x', String(x*this.sqLen+10));
-	rect.setAttributeNS(null, 'y', String(y*this.sqLen+10));
-	rect.setAttributeNS(null, 'height', String(this.sqLen));
-	rect.setAttributeNS(null, 'width', String(this.sqLen));
+	rect.setAttributeNS(null, 'x', String(x*this.scale+this.border));
+	rect.setAttributeNS(null, 'y', String(y*this.scale+this.border));
+	rect.setAttributeNS(null, 'height', String(this.scale));
+	rect.setAttributeNS(null, 'width', String(this.scale));
 	rect.setAttributeNS(null, 'fill', color);
 	rect.setAttributeNS(null, 'stroke', '#' + 'fff');
 	rect.setAttributeNS(null, 'class', cssClass || '');
@@ -51,7 +53,6 @@ Space.prototype.drawRec = function (id, x, y, color, cssClass){
 
 	return rect;
 };
-
 
 Space.prototype.paintElement = function (x, y, color){
 	color = color || '#f7e28b';
@@ -64,34 +65,23 @@ Space.prototype.moveFromTo = function(el, from, to) {
 	var path = this.findPath(from, to);
 
 	if (el && path.length > 0) {
-		this.showElement(el);
 
-//			var animation = document.createElementNS(this.svg, 'animateTransform');
-//			animation.setAttributeNS(null, 'attributeName', 'transform');
-//			animation.setAttributeNS(null, 'type', 'translate');
-//			animation.setAttributeNS(null, 'from', String(from.x*this.sqLen) + ' ' + String(from.x*this.sqLen));
-//			animation.setAttributeNS(null, 'to', String(to.x*this.sqLen) + ' ' + String(to.y*this.sqLen));
-//			animation.setAttributeNS(null, 'dur', '10s');
-//
-//			el.appendChild(animation);
-
-		el.setAttributeNS(null, 'transform', 'translate('+ String(to.x*this.sqLen) + ' ' + String(to.y*this.sqLen) + ')');
-
+		el.setAttributeNS(null, 'x', String(to.x*this.scale+this.border));
+		el.setAttributeNS(null, 'y', String(to.y*this.scale+this.border));
 	}
 
 	return path;
 };
 
-Space.prototype.setEvents = function () {
+Space.prototype.bindClickEvent = function () {
 	var self = this;
-	var keyPressed = false;
 
 	this.svgEl.onclick = function(e) {
 		var event = e ? e : event;
 		var targetElement = event.target;
 
-		var x = Math.floor((event.offsetX - 10) / self.sqLen);
-		var y = Math.floor((event.offsetY - 10) / self.sqLen);
+		var x = Math.floor((event.offsetX - self.border) / self.scale);
+		var y = Math.floor((event.offsetY - self.border) / self.scale);
 
 		if (targetElement.classList.contains('wall')) {
 			space.removeElement(targetElement);
@@ -113,60 +103,28 @@ Space.prototype.setEvents = function () {
 
 	};
 
-	//Register the keydown event handler:
-	document.onkeydown = function(e) {
-		var evt = e ? e : event;
-
-		var keyCode = evt.keyCode;
-		var sModifiers = ''
-			+(evt.ctrlKey  ? 'Ctrl ' :'')
-			+(evt.shiftKey ? 'Shift ':'')
-			+(evt.altKey   ? 'Alt '  :'') ;
-
-		if (!keyPressed && (37 <= keyCode && keyCode <= 40)) {
-			evt.preventDefault();
-
-			console.log('keyCode='+keyCode);
-
-			keyPressed = true;
-
-			return false;
-		};
-
-		return true;
-	};
-
-
-	window.onkeyup = function(e) {
-		var evt = e ? e : event;
-		keyPressed = false;
-	};
-
 };
 
 Space.prototype.showElement = function (el){
 	this.removeElement(el);
 
 	document.getElementById('svg-space').appendChild(el);
-
 };
 
-Space.prototype.findPath = function(start, end) {
+Space.prototype.findPath = function(from, to) {
 	var startTime = new Date().getTime();
 
-	var initial = new Point(start.x,start.y);
-	var goal = new Point(end.x, end.y);
+	from = new Point(from.x,from.y);
+	to = new Point(to.x, to.y);
 
-	var w = document.getElementById('weight').value;
-	console.log(w);
+	var w = document.getElementById('weight');
 
-	var problemSolvingAgent = new ProblemSolvingAgent(initial, goal, w);
+	w = w ? w.value : 1;
+	//console.log(w);
+
+	var problemSolvingAgent = new ProblemSolvingAgent(from, to, this.dim, w);
 
 	problemSolvingAgent.setDeniedStates(this.walls);
-
-	if (problemSolvingAgent.isOverflow(initial) || problemSolvingAgent.isDenied(initial)
-		|| problemSolvingAgent.isOverflow(goal) || problemSolvingAgent.isDenied(goal))
-		return false;
 
 	var result = problemSolvingAgent.AEstrela();
 
@@ -174,7 +132,7 @@ Space.prototype.findPath = function(start, end) {
 
 	var time = endTime - startTime;
 
-	console.log('Execution time: ' + time/1000.0 + 'seconds');
+	//console.log('Execution time: ' + time/1000.0 + 'seconds');
 
 	return result;
 };
@@ -226,8 +184,8 @@ Agent.prototype.bindDragNDrop = function(space) {
 	this.element.addEventListener('mousedown', function(ev) {
 		if(!dragData) {
 			ev=ev||event;
-			var x = Math.floor((ev.offsetX - 10) / space.sqLen);
-			var y = Math.floor((ev.offsetY - 10) / space.sqLen);
+			var x = Math.floor((ev.offsetX - space.border) / space.scale);
+			var y = Math.floor((ev.offsetY - space.border) / space.scale);
 
 			dragData = {
 				x:  ev.clientX-self.element.offsetLeft,
@@ -245,30 +203,43 @@ Agent.prototype.bindDragNDrop = function(space) {
 		if(dragData) {
 			ev = ev || event;
 
-			var x = Math.floor((ev.offsetX - 10) / space.sqLen);
-			var y = Math.floor((ev.offsetY - 10) / space.sqLen);
+			var x = Math.floor((ev.offsetX - space.border) / space.scale);
+			var y = Math.floor((ev.offsetY - space.border) / space.scale);
 
 			self.state = new Point(x, y);
 
-			self.element.setAttributeNS(null, 'x', String(x*space.sqLen+10));
-			self.element.setAttributeNS(null, 'y', String(y*space.sqLen+10));
+			self.element.setAttributeNS(null, 'x', String(x*space.scale+space.border));
+			self.element.setAttributeNS(null, 'y', String(y*space.scale+space.border));
 
 		}
 	}
 
 	function stopDrag(ev) {
 		if(dragData) {
-			var x = Math.floor((ev.offsetX - 10) / space.sqLen);
-			var y = Math.floor((ev.offsetY - 10) / space.sqLen);
+			var x = Math.floor((ev.offsetX - space.border) / space.scale);
+			var y = Math.floor((ev.offsetY - space.border) / space.scale);
 
 			self.state = new Point(x, y);
 
-			self.element.setAttributeNS(null, 'x', String(x*space.sqLen+10));
-			self.element.setAttributeNS(null, 'y', String(y*space.sqLen+10));
+			self.element.setAttributeNS(null, 'x', String(x*space.scale+space.border));
+			self.element.setAttributeNS(null, 'y', String(y*space.scale+space.border));
 
 			dragData = null;
 			space.svgEl.removeEventListener('mousemove', dragging, false);
 			space.svgEl.removeEventListener('mouseup', stopDrag, false);
 		}
+	}
+};
+
+
+Agent.prototype.moveInSpace = function(space, keyAction) {
+	var action = ACTIONS[keyAction];
+	
+	var stateResult = this.state.add(action.state);
+
+	var result = space.moveFromTo(this.element, this.state, stateResult);
+
+	if (result.length > 0){
+		this.state = stateResult;
 	}
 };

@@ -38,9 +38,9 @@ Point.prototype.norm = function() {
 	return this.scale(1.0/this.len());
 };
 
-Point.prototype.move = function(movement){
+Point.prototype.move = function(move){
 
-	var result = this.add(movement);
+	var result = this.add(move);
 	return result;
 };
 
@@ -54,6 +54,21 @@ Point.prototype.equalsTo = function(v){
 	}
 	return false;
 };
+
+Point.prototype.biggerThan = function(v){
+	if (this.x > v.x && this.y > v.y) {
+		return true;
+	}
+	return false;
+};
+
+Point.prototype.lessThan = function(v){
+	if (this.x < v.x && this.y < v.y) {
+		return true;
+	}
+	return false;
+};
+
 
 
 //$Node prototype
@@ -120,45 +135,46 @@ Fringe.prototype.pop = function(){
 
 //$ACTIONS constant
 var ACTIONS = {
-	'up' 		: 	{
-		movement: new Point(0, 1),
+	'down' 		: 	{
+		state: new Point(0, 1),
 		cost	: 1.0
 	},
 	'right'		: 	{
-		movement: new Point(1, 0),
+		state: new Point(1, 0),
 		cost	: 1.0
 	},
-	'down'		: 	{
-		movement: new Point(0, -1),
+	'up'		: 	{
+		state: new Point(0, -1),
 		cost	: 1.0
 	},
 	'left'		:	{
-		movement: new Point(-1, 0),
+		state: new Point(-1, 0),
 		cost	: 1.0
 	},
-	'up-right'	: 	{
-		movement: new Point(1, 1),
-		cost	: 1.4
-	},
-	'up-left'	:	{
-		movement: new Point(-1, 1),
-		cost	: 1.4
-	},
-	'down-right':	{
-		movement:	new Point(1, -1),
+	'down-right'	: 	{
+		state: new Point(1, 1),
 		cost	: 1.4
 	},
 	'down-left'	:	{
-		movement: new Point(-1, -1),
+		state: new Point(-1, 1),
+		cost	: 1.4
+	},
+	'up-right':	{
+		state:	new Point(1, -1),
+		cost	: 1.4
+	},
+	'up-left'	:	{
+		state: new Point(-1, -1),
 		cost	: 1.4
 	},
 };
 
 //$ProblemSolvingAgent
 
-function ProblemSolvingAgent(initialState, goalState, weight) {
+function ProblemSolvingAgent(initialState, goalState, dim, weight) {
 	this.initialState = initialState || new Point();
 	this.goalState = goalState || new Point();
+	this.dim = dim || new Point(10, 10);
 	this.weight = weight || 0;
 	this.deniedStates = [];
 	this.closedStates = [];
@@ -187,7 +203,7 @@ ProblemSolvingAgent.prototype.setDeniedStates = function(states) {
 };
 
 ProblemSolvingAgent.prototype.isOverflow = function(state) {
-	if (state.x > 9 || state.y > 9 || state.x < 0 || state.y < 0) {
+	if (state.x >= this.dim.x || state.y >= this.dim.y|| state.x < 0 || state.y < 0) {
 		return true;
 	}
 
@@ -200,13 +216,73 @@ ProblemSolvingAgent.prototype.isDenied = function(state) {
 	});
 };
 
+
+ProblemSolvingAgent.prototype.getResultActions = function(state) {
+
+	var action;
+	var resultActions = {};
+
+	var actions = {
+		'down' 		: 	{
+			state: new Point(0, 1),
+			cost	: 1.0
+		},
+		'right'		: 	{
+			state: new Point(1, 0),
+			cost	: 1.0
+		},
+		'up'		: 	{
+			state: new Point(0, -1),
+			cost	: 1.0
+		},
+		'left'		:	{
+			state: new Point(-1, 0),
+			cost	: 1.0
+		},
+		'down-right'	: 	{
+			state: new Point(1, 1),
+			cost	: 1.4
+		},
+		'down-left'	:	{
+			state: new Point(-1, 1),
+			cost	: 1.4
+		},
+		'up-right':	{
+			state:	new Point(1, -1),
+			cost	: 1.4
+		},
+		'up-left'	:	{
+			state: new Point(-1, -1),
+			cost	: 1.4
+		},
+	};
+
+	for (var actionName in actions) {
+		action = actions[actionName];
+
+		var resultAction = state.move(action.state);
+
+		if (this.isOverflow(resultAction) || this.isDenied(resultAction) || this.isClosed(resultAction)){
+			continue;
+		}
+
+		resultActions[actionName] = {
+			state: resultAction,
+			cost: action.cost
+		};
+	}
+
+	return resultActions;
+
+};
+
 ProblemSolvingAgent.prototype.expand = function(node) {
 	var successors = [];
 
 	for (var actionName in ACTIONS) {
 		var action = ACTIONS[actionName];
 
-		var stateResult = node.state.move(action.movement);
+		var stateResult = node.state.move(action.state);
 
 		if (this.isOverflow(stateResult) || this.isDenied(stateResult) || this.isClosed(stateResult)) continue;
 
@@ -228,11 +304,16 @@ ProblemSolvingAgent.prototype.AEstrela = function() {
 	var successors;
 	var initialNode = new Node(this.initialState);
 	var fringe = new Fringe();
+
+	if (this.isOverflow(this.initialState) || this.isDenied(this.initialState)
+		|| this.isOverflow(this.goalState) || this.isDenied(this.goalState))
+		return [];
+
 	fringe.insert(initialNode);
 
 	while (true) {
 		if (fringe.isEmpty()) {
-			return false;
+			return [];
 		}
 		//Makes initial node
 		node = fringe.pop();
