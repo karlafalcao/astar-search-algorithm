@@ -79,6 +79,7 @@ function Node (state, parent, action, pathCost, depth) {
 	this.action = action || '' ;
 	this.pathCost = pathCost || 0 ;
 	this.depth = depth || 0 ;
+	this.successors = [] ;
 };
 
 Node.prototype.state = null;
@@ -86,16 +87,16 @@ Node.prototype.parent = null;
 Node.prototype.action = null;
 Node.prototype.pathCost = null;
 Node.prototype.depth = null;
+Node.prototype.successors = null;
 
 
 Node.prototype.solution = function() {
-	space.drawRec(space.createId('sol', this.state.x, this.state.y), this.state.x, this.state.y, '#ffcc00', 'solution');
 
 	if (this.depth === 0) {
-		return [this.state];
+		return [this];
 	}
 
-	return new Array(this.state).concat(this.parent.solution());
+	return new Array(this).concat(this.parent.solution());
 };
 
 //$Fringe prototype
@@ -125,7 +126,6 @@ Fringe.prototype.insertAll = function(nodes){
 	for (var i in nodes) {
 		var node = nodes[i];
 		this.insert(node);
-		space.drawRec(space.createId('sol', node.state.x, node.state.y), node.state.x, node.state.y, '#23d400', 'solution');
 	}
 };
 
@@ -326,6 +326,7 @@ ProblemSolvingAgent.prototype.AEstrela = function() {
 		if (!this.isClosed(node.state)) {
 			this.insertClosed(node.state);
 			successors = this.expand(node);
+			node.successors = successors;
 			
 			fringe.insertAll(successors);
 			fringe.sort(this);

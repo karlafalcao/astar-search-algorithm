@@ -1,10 +1,18 @@
-function Space(svg, scale, dim, border, color) {
+function Space(svg, scale, dim, border, color, walls) {
 	this.svg = svg || '';
 	this.scale = scale || 60;
 	this.dim = dim || new Point(10, 10);
 	this.border = border || 0;
-	this.walls = [];
 	this.color = color || 'rgba(250,226,76,.6)';
+
+	this.walls = [];
+
+	if (walls) {
+		for (var i = 0; i < walls.length; i ++) {
+			var wall = walls[i];
+			this.walls.push(new Point(wall.x, wall.y));
+		}
+	}
 
 	this.svgEl = document.getElementsByTagNameNS(this.svg, 'svg')[0];
 
@@ -18,6 +26,14 @@ Space.prototype.draw = function() {
 		for (var y = 0; y < this.dim.y; y ++) {
 			this.drawRec(this.createId('bg',x,y), x, y, this.color, 'bg');
 		}
+	}
+};
+
+Space.prototype.drawWalls = function() {
+
+	for (var i = 0; i < this.walls.length; i ++) {
+		var wall = this.walls[i];
+		this.drawRec(this.createId('bg',wall.x,wall.y), wall.x, wall.y, '#A52A2A', 'bg');
 	}
 };
 
@@ -46,12 +62,18 @@ Space.prototype.drawRec = function (id, x, y, color, cssClass){
 	rect.setAttributeNS(null, 'height', String(this.scale));
 	rect.setAttributeNS(null, 'width', String(this.scale));
 	rect.setAttributeNS(null, 'fill', color);
-	rect.setAttributeNS(null, 'stroke', '#' + 'fff');
+	rect.setAttributeNS(null, 'stroke', '#' + '000');
 	rect.setAttributeNS(null, 'class', cssClass || '');
 
 	document.getElementById('svg-space').appendChild(rect);
 
 	return rect;
+};
+
+Space.prototype.normalizeState = function (state){
+	return new Point( state.x*this.scale+this.border,
+		state.y*this.scale+this.border)
+
 };
 
 Space.prototype.paintElement = function (x, y, color){
@@ -62,15 +84,50 @@ Space.prototype.paintElement = function (x, y, color){
 
 Space.prototype.moveFromTo = function(el, from, to) {
 
+
 	var path = this.findPath(from, to);
 
 	if (el && path.length > 0) {
 
-		el.setAttributeNS(null, 'x', String(to.x*this.scale+this.border));
-		el.setAttributeNS(null, 'y', String(to.y*this.scale+this.border));
+		for (var i = 0; i < path.length-1; i++) {
+			var node = path[i];
+			el.setAttributeNS(null, 'x', String(to.x*this.scale+this.border));
+			el.setAttributeNS(null, 'y', String(to.y*this.scale+this.border));
+
+			var fillAttr = el.getAttribute('fill');
+
+			var patternId = fillAttr.slice(fillAttr.indexOf('#')+1, fillAttr.indexOf(')'));
+			var imageElem = document.getElementById(patternId).querySelector('image');
+			imageElem.setAttribute('class', node.action);
+		}
+
 	}
 
 	return path;
+};
+
+
+Space.prototype.move = function(agent, action) {
+
+	var currentState = agent.state;
+	var nextState = currentState.add(action.state);
+	var validPath;
+	var path = [];
+
+	while (true) {
+		validPath = this.findPath(currentState, nextState);
+		path.push(currentState);
+
+		if (!validPath.length) {
+			return path;
+		}
+
+		currentState = validPath[0].state;
+		nextState = currentState.add(action.state);
+		console.log(nextState);
+	}
+
+	return null;
 };
 
 Space.prototype.bindClickEvent = function () {
@@ -151,7 +208,7 @@ Space.prototype.clearPath = function() {
 
 Space.prototype.createElement = function(id, point, color) {
 
-	return space.drawRec(id, point.x, point.y, color);
+	return this.drawRec(id, point.x, point.y, color);
 
 };
 
@@ -237,9 +294,36 @@ Agent.prototype.moveInSpace = function(space, keyAction) {
 	
 	var stateResult = this.state.add(action.state);
 
-	var result = space.moveFromTo(this.element, this.state, stateResult);
+	var path = space.findPath(this.state, stateResult);
 
-	if (result.length > 0){
-		this.state = stateResult;
+	if (this.element && path.length > 0) {
+
+		for (var i = path.length-2; i >= 0; i--) {
+			var toX = String(path[i].state.x*space.scale+space.border);
+			var toY = String(path[i].state.y*space.scale+space.border);
+			//
+			//this.element.setAttributeNS(null, 'x', String(to.x*space.scale+space.border));
+			//this.element.setAttributeNS(null, 'y', String(to.y*space.scale+space.border));
+
+			var self = this;
+			var player = this.element.animate([
+				{transform: 'translate(0)'},
+				{transform: 'translate('+ toX +', ' + toY + ')'}
+			], 1000);
+
+			player.addEventListener('finish', function() {
+				self.element.style.transform = 'translate('+toX+', '+toY+')';
+			});
+
+			var fillAttr = this.element.getAttribute('fill');
+
+			var patternId = fillAttr.slice(fillAttr.indexOf('#')+1, fillAttr.indexOf(')'));
+			var imageElem = document.getElementById(patternId).querySelector('image');
+
+			var node = path[i];
+			imageElem.setAttribute('class', node.action);
+			this.state = new Point(toX, toY);
+		}
+
 	}
 };
