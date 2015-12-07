@@ -1,22 +1,29 @@
-#A*
+# A* (Astar)
 
-## Crie ambiente discretizado 
-	1. Mínimo 10 x 10 posições – exemplo próximo slide
-	2. Movimentos permitidos: 
-		1. Andar para qualquer um dos 8 blocos em volta da posição atual, se o bloco estiver desimpedido
-			-Custo = 1 para movimentos na vertical e horizontal e custo = 1.4 para  movimentos em diagonal 
+![A*](example.png)
+
+## Environment 
+	1. At least 10 x 10 positions
+	2. Allowed movements: 
+		1. Walk any 8 positions around the current position, if the block is free.
+			-Coast = 
+				- 1 for vertical and horizontal movements. 
+				- 1.4 for diagonal movements.
  
-	3. Posições do estado inicial e estado final definidas como entrada
-	4. Posições dos blocos impedidos (obstáculos) também definidas como entrada
-
+	3. Input: 
+		- Define `Start` and `Goal` positions.
+		- Define `Walls` posisitions.
 	
-	Obs.: criar visualização gráfica do ambiente
 
 
-## Busca pelo melhor caminho
-	1. Implemente o algoritmo A*
-		- Obs.: heurística = distância euclidiana
-	2. Implemente o algoritmo wA*
+## Best path search
+	1. A* algorithm
+		- Obs.: heuristic function = Euclidean distance
+	2. wA* Algorithm
+	
+## Run
+
+- Run `index.html` file on Google Chrome web browser.
 
 
 
