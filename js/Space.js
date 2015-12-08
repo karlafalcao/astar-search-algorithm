@@ -1,3 +1,6 @@
+"use strict";
+
+//$Space
 function Space(svg, scale, dim, border, color, walls) {
 	this.svg = svg || '';
 	this.scale = scale || 60;
@@ -63,6 +66,7 @@ Space.prototype.drawRec = function (id, x, y, color, cssClass){
 	rect.setAttributeNS(null, 'width', String(this.scale));
 	rect.setAttributeNS(null, 'fill', color);
 	rect.setAttributeNS(null, 'stroke', '#' + '000');
+	rect.setAttributeNS(null, 'stroke-width', '2');
 	rect.setAttributeNS(null, 'class', cssClass || '');
 
 	document.getElementById('svg-space').appendChild(rect);
@@ -84,24 +88,7 @@ Space.prototype.paintElement = function (x, y, color){
 
 Space.prototype.moveFromTo = function(el, from, to) {
 
-
 	var path = this.findPath(from, to);
-
-	if (el && path.length > 0) {
-
-		for (var i = 0; i < path.length-1; i++) {
-			var node = path[i];
-			el.setAttributeNS(null, 'x', String(to.x*this.scale+this.border));
-			el.setAttributeNS(null, 'y', String(to.y*this.scale+this.border));
-
-			var fillAttr = el.getAttribute('fill');
-
-			var patternId = fillAttr.slice(fillAttr.indexOf('#')+1, fillAttr.indexOf(')'));
-			var imageElem = document.getElementById(patternId).querySelector('image');
-			imageElem.setAttribute('class', node.action);
-		}
-
-	}
 
 	return path;
 };
@@ -210,120 +197,4 @@ Space.prototype.createElement = function(id, point, color) {
 
 	return this.drawRec(id, point.x, point.y, color);
 
-};
-
-
-// Agent ########################################
-
-function Agent(name, state, color) {
-	this.name = name || 'agent';
-	this.state = state || new Point(0,0);
-	this.color = color || '#000';
-	this.element = [];
-}
-
-Agent.prototype.drawInSpace = function(space) {
-	this.element = space.createElement(this.name, this.state, this.color);
-};
-
-Agent.prototype.showInSpace = function(space) {
-	if(this.element) {
-		space.showElement(this.element);
-	} else {
-		console.log('Element undefined');
-	}
-};
-
-Agent.prototype.bindDragNDrop = function(space) {
-	var self = this;
-	var dragData = null;
-
-	this.element.addEventListener('mousedown', function(ev) {
-		if(!dragData) {
-			ev=ev||event;
-			var x = Math.floor((ev.offsetX - space.border) / space.scale);
-			var y = Math.floor((ev.offsetY - space.border) / space.scale);
-
-			dragData = {
-				x:  ev.clientX-self.element.offsetLeft,
-				y: ev.clientY-self.element.offsetTop
-			};
-
-			//console.log(dragData);
-
-			space.svgEl.addEventListener('mousemove', dragging, false);
-			space.svgEl.addEventListener('mouseup', stopDrag, false);
-		};
-	});
-
-	function dragging(ev) {
-		if(dragData) {
-			ev = ev || event;
-
-			var x = Math.floor((ev.offsetX - space.border) / space.scale);
-			var y = Math.floor((ev.offsetY - space.border) / space.scale);
-
-			self.state = new Point(x, y);
-
-			self.element.setAttributeNS(null, 'x', String(x*space.scale+space.border));
-			self.element.setAttributeNS(null, 'y', String(y*space.scale+space.border));
-
-		}
-	}
-
-	function stopDrag(ev) {
-		if(dragData) {
-			var x = Math.floor((ev.offsetX - space.border) / space.scale);
-			var y = Math.floor((ev.offsetY - space.border) / space.scale);
-
-			self.state = new Point(x, y);
-
-			self.element.setAttributeNS(null, 'x', String(x*space.scale+space.border));
-			self.element.setAttributeNS(null, 'y', String(y*space.scale+space.border));
-
-			dragData = null;
-			space.svgEl.removeEventListener('mousemove', dragging, false);
-			space.svgEl.removeEventListener('mouseup', stopDrag, false);
-		}
-	}
-};
-
-
-Agent.prototype.moveInSpace = function(space, keyAction) {
-	var action = ACTIONS[keyAction];
-	
-	var stateResult = this.state.add(action.state);
-
-	var path = space.findPath(this.state, stateResult);
-
-	if (this.element && path.length > 0) {
-
-		for (var i = path.length-2; i >= 0; i--) {
-			var toX = String(path[i].state.x*space.scale+space.border);
-			var toY = String(path[i].state.y*space.scale+space.border);
-			//
-			//this.element.setAttributeNS(null, 'x', String(to.x*space.scale+space.border));
-			//this.element.setAttributeNS(null, 'y', String(to.y*space.scale+space.border));
-
-			var self = this;
-			var player = this.element.animate([
-				{transform: 'translate(0)'},
-				{transform: 'translate('+ toX +', ' + toY + ')'}
-			], 1000);
-
-			player.addEventListener('finish', function() {
-				self.element.style.transform = 'translate('+toX+', '+toY+')';
-			});
-
-			var fillAttr = this.element.getAttribute('fill');
-
-			var patternId = fillAttr.slice(fillAttr.indexOf('#')+1, fillAttr.indexOf(')'));
-			var imageElem = document.getElementById(patternId).querySelector('image');
-
-			var node = path[i];
-			imageElem.setAttribute('class', node.action);
-			this.state = new Point(toX, toY);
-		}
-
-	}
 };
