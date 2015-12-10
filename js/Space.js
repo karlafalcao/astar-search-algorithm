@@ -36,8 +36,22 @@ Space.prototype.drawWalls = function() {
 
 	for (var i = 0; i < this.walls.length; i ++) {
 		var wall = this.walls[i];
-		this.drawRec(this.createId('bg',wall.x,wall.y), wall.x, wall.y, '#A52A2A', 'bg');
+		this.createElement(this.createId('maze', wall.x, wall.y), wall, 'transparent', 'maze');
 	}
+};
+
+Space.prototype.isWall = function (x, y) {
+	var point = new Point(x, y);
+
+	var isWall = space.walls.find(function(wallPoint){
+		return wallPoint.equalsTo(point);
+	});
+
+	if (isWall === undefined) {
+		return false;
+	}
+
+	return true;
 };
 
 Space.prototype.removeElement = function(element) {
@@ -66,7 +80,7 @@ Space.prototype.drawRec = function (id, x, y, color, cssClass){
 	rect.setAttributeNS(null, 'width', String(this.scale));
 	rect.setAttributeNS(null, 'fill', color);
 	rect.setAttributeNS(null, 'stroke', '#' + '000');
-	rect.setAttributeNS(null, 'stroke-width', '2');
+	rect.setAttributeNS(null, 'stroke-width', '0');
 	rect.setAttributeNS(null, 'class', cssClass || '');
 
 	document.getElementById('svg-space').appendChild(rect);
@@ -139,7 +153,7 @@ Space.prototype.bindClickEvent = function () {
 			});
 		} else if (targetElement.classList.contains('bg') || targetElement.classList.contains('solution')) {
 
-			self.drawRec(self.createId('wall', x, y), x, y, '#A52A2A', 'wall');
+			self.createElement(self.createId('wall', x, y), new Point(x, y), '#A52A2A', 'wall');
 
 			self.walls.push(new Point(x,y));
 
@@ -193,8 +207,8 @@ Space.prototype.clearPath = function() {
 	}
 };
 
-Space.prototype.createElement = function(id, point, color) {
+Space.prototype.createElement = function(id, point, color, cssClass) {
 
-	return this.drawRec(id, point.x, point.y, color);
+	return this.drawRec(id, point.x, point.y, color, cssClass);
 
 };

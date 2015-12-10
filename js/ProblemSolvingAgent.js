@@ -28,14 +28,14 @@ Node.prototype.solution = function() {
 	return new Array(this).concat(this.parent.solution());
 };
 
-//$Fringe prototype
+//$Queue prototype
 
-function Fringe(queue) {
+function Queue(queue) {
 	this.queue = queue || [];
 }
-Fringe.prototype.queue = null; // Contains Nodes
+Queue.prototype.queue = null; // Contains Nodes
 
-Fringe.prototype.sort =	function(problem){
+Queue.prototype.sort =	function(problem){
 	this.queue.sort(function(n1, n2){
 		var h1 =  n1.state.dist(problem.goalState) * problem.weight;
 		var h2 =  n2.state.dist(problem.goalState) * problem.weight;
@@ -43,22 +43,22 @@ Fringe.prototype.sort =	function(problem){
 	});
 };
 
-Fringe.prototype.isEmpty =	function(queue){
+Queue.prototype.isEmpty =	function(queue){
 	return this.queue.length === 0;
 };
 
-Fringe.prototype.insert = function(node){
+Queue.prototype.insert = function(node){
 	this.queue.unshift(node);
 };
 
-Fringe.prototype.insertAll = function(nodes){
+Queue.prototype.insertAll = function(nodes){
 	for (var i in nodes) {
 		var node = nodes[i];
 		this.insert(node);
 	}
 };
 
-Fringe.prototype.pop = function(){
+Queue.prototype.pop = function(){
 	return this.queue.shift();
 };
 
@@ -197,7 +197,7 @@ ProblemSolvingAgent.prototype.AEstrela = function() {
 	var node;
 	var successors;
 	var initialNode = new Node(this.initialState);
-	var fringe = new Fringe();
+	var fringe = new Queue();
 
 	if (this.isOverflow(this.initialState) || this.isDenied(this.initialState)
 		|| this.isOverflow(this.goalState) || this.isDenied(this.goalState))
