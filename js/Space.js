@@ -2,7 +2,7 @@
 
 //$Space
 function Space(svg, scale, dim, border, color, walls) {
-	this.svg = svg || '';
+	this.svg = svg || 'http://www.w3.org/2000/svg';
 	this.scale = scale || 60;
 	this.dim = dim || new Point(10, 10);
 	this.border = border || 0;
