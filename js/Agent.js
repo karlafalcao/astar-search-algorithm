@@ -2,15 +2,19 @@
 
 //$Agent
 
-function Agent(name, state, color) {
+function Agent(name, x, y, color, space) {
 	this.name = name || 'agent';
-	this.state = state || new Point(0,0);
 	this.color = color || '#000';
+	this.space = space || new Space();
 	this.element = [];
+
+	var oX = x || 0;
+	var oY = y || 0;
+	this.state = new Point(oX,oY);
 }
 
-Agent.prototype.drawInSpace = function(space) {
-	this.element = space.createElement(this.name, this.state, this.color);
+Agent.prototype.draw = function() {
+	this.element = this.space.createElement(this.name, this.state.x, this.state.y, this.color);
 };
 
 Agent.prototype.showInSpace = function(space) {

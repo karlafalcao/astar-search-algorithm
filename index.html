@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<title></title>
 	<script src="js/Point.js"></script>
-	<script src="js/ProblemSolvingAgent.js"></script>
+	<script src="js/PathFinder.js"></script>
 	<script src="js/Space.js"></script>
 	<script src="js/Agent.js"></script>
 	<style>
@@ -34,6 +34,7 @@
 	var space;
 	var initialAgent;
 	var goalAgent;
+	var pathFinder;
 
 	function startSpace() {
 
@@ -43,12 +44,12 @@
 
 		space.bindClickEvent();
 
-		initialAgent = new Agent('ini', new Point(0,0), '#FF002B');
-		initialAgent.drawInSpace(space);
+		initialAgent = new Agent('ini', 0, 0, '#FF002B', space);
+		initialAgent.draw();
 		initialAgent.bindDragNDrop(space);
 
-		goalAgent = new Agent('goal', new Point(9,9), '#0000FF');
-		goalAgent.drawInSpace(space);
+		goalAgent = new Agent('goal', 9, 9, '#0000FF', space);
+		goalAgent.draw();
 		goalAgent.bindDragNDrop(space);
 
 		return space;

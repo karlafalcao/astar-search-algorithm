@@ -36,22 +36,8 @@ Space.prototype.drawWalls = function() {
 
 	for (var i = 0; i < this.walls.length; i ++) {
 		var wall = this.walls[i];
-		this.createElement(this.createId('maze', wall.x, wall.y), wall, 'transparent', 'maze');
+		this.createElement(this.createId('maze', wall.x, wall.y), wall.x, wall.y, 'transparent', 'maze');
 	}
-};
-
-Space.prototype.isWall = function (x, y) {
-	var point = new Point(x, y);
-
-	var isWall = space.walls.find(function(wallPoint){
-		return wallPoint.equalsTo(point);
-	});
-
-	if (isWall === undefined) {
-		return false;
-	}
-
-	return true;
 };
 
 Space.prototype.removeElement = function(element) {
@@ -153,7 +139,7 @@ Space.prototype.bindClickEvent = function () {
 			});
 		} else if (targetElement.classList.contains('bg') || targetElement.classList.contains('solution')) {
 
-			self.createElement(self.createId('wall', x, y), new Point(x, y), '#A52A2A', 'wall');
+			self.createElement(self.createId('wall', x, y), x, y, '#A52A2A', 'wall');
 
 			self.walls.push(new Point(x,y));
 
@@ -180,11 +166,11 @@ Space.prototype.findPath = function(from, to) {
 	w = w ? w.value : 1;
 	//console.log(w);
 
-	var problemSolvingAgent = new ProblemSolvingAgent(from, to, this.dim, w);
+	var pathFinder = new PathFinder(from, to, this.dim, w);
 
-	problemSolvingAgent.setDeniedStates(this.walls);
+	pathFinder.setDeniedStates(this.walls);
 
-	var result = problemSolvingAgent.AEstrela();
+	var result = pathFinder.AEstrela();
 
 	var endTime = new Date().getTime();
 
@@ -207,8 +193,8 @@ Space.prototype.clearPath = function() {
 	}
 };
 
-Space.prototype.createElement = function(id, point, color, cssClass) {
+Space.prototype.createElement = function(id, x, y, color, cssClass) {
 
-	return this.drawRec(id, point.x, point.y, color, cssClass);
+	return this.drawRec(id, x, y, color, cssClass);
 
 };

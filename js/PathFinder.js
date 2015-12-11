@@ -62,9 +62,9 @@ Queue.prototype.pop = function(){
 	return this.queue.shift();
 };
 
-//$ProblemSolvingAgent
+//$PathFinder
 
-function ProblemSolvingAgent(initialState, goalState, dim, weight) {
+function PathFinder(initialState, goalState, dim, weight) {
 	this.initialState = initialState || new Point();
 	this.goalState = goalState || new Point();
 	this.dim = dim || new Point(10, 10);
@@ -74,29 +74,29 @@ function ProblemSolvingAgent(initialState, goalState, dim, weight) {
 	this.actions = ACTIONS || [];
 }
 
-ProblemSolvingAgent.prototype.initialState = null;
-ProblemSolvingAgent.prototype.goalState = null;
-ProblemSolvingAgent.prototype.deniedStates = null;
-ProblemSolvingAgent.prototype.closedStates = null;
+PathFinder.prototype.initialState = null;
+PathFinder.prototype.goalState = null;
+PathFinder.prototype.deniedStates = null;
+PathFinder.prototype.closedStates = null;
 
 
-ProblemSolvingAgent.prototype.isClosed = function(state) {
+PathFinder.prototype.isClosed = function(state) {
 	return this.closedStates.some(function(closed){
 		return closed.equalsTo(state);
 	});
 };
 
-ProblemSolvingAgent.prototype.insertClosed = function(state) {
+PathFinder.prototype.insertClosed = function(state) {
 	return this.closedStates.push(state);
 };
 
-ProblemSolvingAgent.prototype.setDeniedStates = function(states) {
+PathFinder.prototype.setDeniedStates = function(states) {
 	for (var i=0; i<states.length; i++) {
 		this.deniedStates.push(states[i]);
 	}
 };
 
-ProblemSolvingAgent.prototype.isOverflow = function(state) {
+PathFinder.prototype.isOverflow = function(state) {
 	if (state.x >= this.dim.x || state.y >= this.dim.y|| state.x < 0 || state.y < 0) {
 		return true;
 	}
@@ -104,14 +104,14 @@ ProblemSolvingAgent.prototype.isOverflow = function(state) {
 	return false;
 };
 
-ProblemSolvingAgent.prototype.isDenied = function(state) {
+PathFinder.prototype.isDenied = function(state) {
 	return this.deniedStates.some(function(denied){
 		return denied.equalsTo(state);
 	});
 };
 
 
-ProblemSolvingAgent.prototype.getResultActions = function(state) {
+PathFinder.prototype.getResultActions = function(state) {
 
 	var action;
 	var resultActions = {};
@@ -170,7 +170,7 @@ ProblemSolvingAgent.prototype.getResultActions = function(state) {
 
 };
 
-ProblemSolvingAgent.prototype.expand = function(node) {
+PathFinder.prototype.expand = function(node) {
 	var successors = [];
 
 	for (var actionName in this.actions) {
@@ -193,7 +193,7 @@ ProblemSolvingAgent.prototype.expand = function(node) {
 	return successors;
 };
 
-ProblemSolvingAgent.prototype.AEstrela = function() {
+PathFinder.prototype.AEstrela = function() {
 	var node;
 	var successors;
 	var initialNode = new Node(this.initialState);
@@ -221,14 +221,14 @@ ProblemSolvingAgent.prototype.AEstrela = function() {
 			this.insertClosed(node.state);
 			successors = this.expand(node);
 			node.successors = successors;
-			
+
 			fringe.insertAll(successors);
 			fringe.sort(this);
 		}
 	}
 };
 
-ProblemSolvingAgent.prototype.goalTest = function(state) {
+PathFinder.prototype.goalTest = function(state) {
 	return this.goalState.equalsTo(state);
 };
 
@@ -237,7 +237,7 @@ function init() {
 
 	var goal = new Point(1,1);
 
-	var problemSolvingAgent = new ProblemSolvingAgent(initial, goal);
+	var problemSolvingAgent = new PathFinder(initial, goal);
 
 	var result = problemSolvingAgent.AEstrela();
 	console.log(result);
