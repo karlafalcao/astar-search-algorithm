@@ -11,15 +11,21 @@ function Agent(name, x, y, color, space) {
 	var oX = x || 0;
 	var oY = y || 0;
 	this.state = new Point(oX,oY);
+	this.node = new Node(new Point(oX,oY))
 }
 
-Agent.prototype.draw = function() {
-	this.element = this.space.createElement(this.name, this.state.x, this.state.y, this.color);
+Agent.prototype.setState = function(state) {
+	this.state = state;
+	this.node.state = state;
 };
 
-Agent.prototype.showInSpace = function(space) {
+Agent.prototype.draw = function() {
+	this.element = this.space.createElement(this.name, this.node.state.x, this.node.state.y, this.color);
+};
+
+Agent.prototype.show = function() {
 	if(this.element) {
-		space.showElement(this.element);
+		this.space.showElement(this.element);
 	} else {
 		console.log('Element undefined');
 	}

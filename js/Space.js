@@ -40,7 +40,7 @@ Space.prototype.drawWalls = function() {
 	}
 };
 
-Space.prototype.removeElement = function(element) {
+Space.prototype.removeDOMElement = function(element) {
 
 	if (element.parentNode) {
 		element.parentNode.removeChild(element);
@@ -128,7 +128,7 @@ Space.prototype.bindClickEvent = function () {
 		var y = Math.floor((event.offsetY - self.border) / self.scale);
 
 		if (targetElement.classList.contains('wall')) {
-			space.removeElement(targetElement);
+			space.removeDOMElement(targetElement);
 
 			self.walls = self.walls.filter(function(state){
 				if (state.x === x && state.y === y) {
@@ -150,7 +150,7 @@ Space.prototype.bindClickEvent = function () {
 };
 
 Space.prototype.showElement = function (el){
-	this.removeElement(el);
+	this.removeDOMElement(el);
 
 	document.getElementById('svg-space').appendChild(el);
 };
@@ -187,7 +187,7 @@ Space.prototype.clearPath = function() {
 
 	while (els.length > 0) {
 		Array.prototype.forEach.call(els, function(el) {
-			self.removeElement(el);
+			self.removeDOMElement(el);
 		});
 		els = document.getElementsByClassName('solution');
 	}

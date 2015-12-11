@@ -62,6 +62,15 @@ Queue.prototype.pop = function(){
 	return this.queue.shift();
 };
 
+Queue.prototype.head = function(){
+	return this.queue[0];
+};
+
+Queue.prototype.tail = function(){
+	return this.queue[this.queue.length];
+};
+
+
 //$PathFinder
 
 function PathFinder(initialState, goalState, dim, weight) {
