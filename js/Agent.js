@@ -80,29 +80,48 @@ Agent.prototype.bindDragNDrop = function(space) {
 };
 
 
-Agent.prototype.moveInSpace = function(space, keyAction) {
-	var action = ACTIONS[keyAction];
-
-	var stateResult = this.state.add(action.state);
-
-	var path = space.moveFromTo(this.element, this.state, stateResult);
+Agent.prototype.move = function(path) {
 
 	if (this.element && path.length > 0) {
 
 		for (var i = 0; i < path.length-1; i++) {
 			var node = path[i];
-			this.element.setAttributeNS(null, 'x', String(stateResult.x*space.scale+space.border));
-			this.element.setAttributeNS(null, 'y', String(stateResult.y*space.scale+space.border));
+			this.element.setAttributeNS(null, 'x', String(node.state.x*space.scale+space.border));
+			this.element.setAttributeNS(null, 'y', String(node.state.y*space.scale+space.border));
 
-			this.animateSprite(node);
+			this.animateSprite(node.action);
+
+			this.state = node.state;
+
+			this.broadcast('move', this);
 		}
 
-		this.state = stateResult;
+	} else {
+		pacmanAgent.stopSpriteAnimation();
 	}
 
-	return path;
+
+	return this.state;
 
 };
+
+Agent.prototype.broadcast = function(eventName, data){
+	var event = new CustomEvent(eventName, {detail: data});
+
+	this.element.dispatchEvent(event);
+
+	return event;
+};
+
+
+Agent.prototype.on = function(eventName, eventFn){
+	if (this.element.addEventListener) {
+		this.element.addEventListener(eventName, eventFn, false);
+	} else {
+		this.element.attachEvent(eventName, eventFn);
+	}
+};
+
 
 Agent.prototype.animateSprite = function(actionKey) {
 	var fillAttr = this.element.getAttribute('fill');
