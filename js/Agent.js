@@ -85,32 +85,6 @@ Agent.prototype.bindDragNDrop = function(space) {
 	}
 };
 
-
-Agent.prototype.move = function(path) {
-
-	if (this.element && path.length > 0) {
-
-		for (var i = 0; i < path.length-1; i++) {
-			var node = path[i];
-			this.element.setAttributeNS(null, 'x', String(node.state.x*space.scale+space.border));
-			this.element.setAttributeNS(null, 'y', String(node.state.y*space.scale+space.border));
-
-			this.animateSprite(node.action);
-
-			this.state = node.state;
-
-			this.broadcast('move', this);
-		}
-
-	} else {
-		pacmanAgent.stopSpriteAnimation();
-	}
-
-
-	return this.state;
-
-};
-
 Agent.prototype.broadcast = function(eventName, data){
 	var event = new CustomEvent(eventName, {detail: data});
 
