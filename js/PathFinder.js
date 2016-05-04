@@ -1,8 +1,8 @@
 "use strict";
 
-//$Node prototype
+//$PFNode prototype
 
-function Node (state, parent, action, pathCost, depth) {
+function PFNode (state, parent, action, pathCost, depth) {
 	this.state = state || new Point();
 	this.parent = parent || {};
 	this.action = action || '' ;
@@ -11,15 +11,15 @@ function Node (state, parent, action, pathCost, depth) {
 	this.successors = [] ;
 };
 
-Node.prototype.state = null;
-Node.prototype.parent = null;
-Node.prototype.action = null;
-Node.prototype.pathCost = null;
-Node.prototype.depth = null;
-Node.prototype.successors = null;
+PFNode.prototype.state = null;
+PFNode.prototype.parent = null;
+PFNode.prototype.action = null;
+PFNode.prototype.pathCost = null;
+PFNode.prototype.depth = null;
+PFNode.prototype.successors = null;
 
 
-Node.prototype.solution = function() {
+PFNode.prototype.solution = function() {
 
 	if (this.depth === 0) {
 		return [this];
@@ -194,7 +194,7 @@ PathFinder.prototype.expand = function(node) {
 
 		var depth = node.depth + 1;
 
-		var successor = new Node(stateResult, node, actionName, pathCost, depth);
+		var successor = new PFNode(stateResult, node, actionName, pathCost, depth);
 
 		successors.push(successor);
 	}
@@ -205,7 +205,7 @@ PathFinder.prototype.expand = function(node) {
 PathFinder.prototype.AEstrela = function() {
 	var node;
 	var successors;
-	var initialNode = new Node(this.initialState);
+	var initialNode = new PFNode(this.initialState);
 	var fringe = new Queue();
 
 	if (this.isOverflow(this.initialState) || this.isDenied(this.initialState)

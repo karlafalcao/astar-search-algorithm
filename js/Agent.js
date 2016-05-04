@@ -11,7 +11,7 @@ function Agent(name, x, y, color, space) {
 	var oX = x || 0;
 	var oY = y || 0;
 	this.state = new Point(oX,oY);
-	this.node = new Node(new Point(oX,oY))
+	this.node = new PFNode(new Point(oX,oY))
 }
 
 Agent.prototype.setState = function(state) {
