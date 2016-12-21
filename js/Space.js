@@ -32,6 +32,38 @@ Space.prototype.draw = function() {
 	}
 };
 
+Space.prototype.drawPath = function(path) {
+	var successor;
+	var node;
+	var i = path.length-2;
+	var that = this;
+	var timer = window.setInterval(function(){
+		node = path[i];
+		that.drawRec(that.createId('sol', node.state.x, node.state.y), node.state.x, node.state.y, '#ffcc00', 'solution');
+
+		var j = 0;
+		var timer2 = window.setInterval(function(node){
+			successor = node.successors[j];
+			if (!initialAgent.state.equalsTo(successor.state) && !goalAgent.state.equalsTo(successor.state))
+				that.drawRec(that.createId('sol', successor.state.x, successor.state.y), successor.state.x, successor.state.y, '#23d400', 'solution');
+
+			if (j === node.successors.length-1) {
+				clearInterval(timer2);
+			}
+
+			j++;
+
+		}, 5, node);
+
+
+		if (i === 1) {
+			clearInterval(timer);
+		}
+
+		i--;
+
+	}, 100);
+};
 Space.prototype.drawWalls = function() {
 
 	for (var i = 0; i < this.walls.length; i ++) {
@@ -92,7 +124,6 @@ Space.prototype.moveFromTo = function(el, from, to) {
 
 	return path;
 };
-
 
 Space.prototype.move = function(agent, action) {
 

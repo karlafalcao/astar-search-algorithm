@@ -57,40 +57,12 @@
 
 
 	var start = function() {
-		var successor;
-		var node;
+
 		space.clearPath();
 
 		var path = space.moveFromTo(null,initialAgent.state, goalAgent.state);
-		var i = path.length-2;
-
-		var timer = window.setInterval(function(){
-			node = path[i];
-			space.drawRec(space.createId('sol', node.state.x, node.state.y), node.state.x, node.state.y, '#ffcc00', 'solution');
-
-			var j = 0;
-			var timer2 = window.setInterval(function(node){
-				successor = node.successors[j];
-				if (!initialAgent.state.equalsTo(successor.state) && !goalAgent.state.equalsTo(successor.state))
-					space.drawRec(space.createId('sol', successor.state.x, successor.state.y), successor.state.x, successor.state.y, '#23d400', 'solution');
-
-				if (j === node.successors.length-1) {
-					clearInterval(timer2);
-				}
-
-				j++;
-
-			}, 5, node);
-
-
-			if (i === 1) {
-				clearInterval(timer);
-			}
-
-			i--;
-
-		}, 100);
-
+		
+		space.drawPath(path);
 
 	};
 
