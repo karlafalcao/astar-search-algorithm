@@ -1,10 +1,10 @@
 "use strict";
 
 //$Space
-function Space(svg, scale, dim, border, color, walls) {
+function Space(svg, scale, dimension, border, color, walls) {
 	this.svg = svg || 'http://www.w3.org/2000/svg';
 	this.scale = scale || 60;
-	this.dim = dim || new Point(10, 10);
+	this.dimension = dimension || new Point(10, 10);
 	this.border = border || 0;
 	this.color = color || 'rgba(250,226,76,.6)';
 
@@ -19,14 +19,14 @@ function Space(svg, scale, dim, border, color, walls) {
 
 	this.svgEl = document.getElementsByTagNameNS(this.svg, 'svg')[0];
 
-	this.svgEl.setAttributeNS(null, 'width', String(this.scale * this.dim.x + this.border * 2));
-	this.svgEl.setAttributeNS(null, 'height', String(this.scale * this.dim.y + this.border * 2));
+	this.svgEl.setAttributeNS(null, 'width', String(this.scale * this.dimension.x + this.border * 2));
+	this.svgEl.setAttributeNS(null, 'height', String(this.scale * this.dimension.y + this.border * 2));
 }
 
 Space.prototype.draw = function() {
 
-	for (var x = 0; x < this.dim.x; x ++) {
-		for (var y = 0; y < this.dim.y; y ++) {
+	for (var x = 0; x < this.dimension.x; x ++) {
+		for (var y = 0; y < this.dimension.y; y ++) {
 			this.drawRec(this.createId('bg',x,y), x, y, this.color, 'bg');
 		}
 	}
@@ -64,6 +64,7 @@ Space.prototype.drawPath = function(path) {
 
 	}, 100);
 };
+
 Space.prototype.drawWalls = function() {
 
 	for (var i = 0; i < this.walls.length; i ++) {
@@ -118,7 +119,7 @@ Space.prototype.paintElement = function (x, y, color){
 	rect.setAttributeNS(null, 'fill', color);
 };
 
-Space.prototype.moveFromTo = function(el, from, to) {
+Space.prototype.moveFromTo = function(from, to) {
 
 	var path = this.findPath(from, to);
 
@@ -189,20 +190,22 @@ Space.prototype.showElement = function (el){
 Space.prototype.findPath = function(from, to) {
 	var startTime = new Date().getTime();
 
+	//
 	from = new Point(from.x,from.y);
 	to = new Point(to.x, to.y);
 
-	var w = document.getElementById('weight');
+	var weight = document.getElementById('weight');
 
-	w = w ? w.value : 1;
-	//console.log(w);
+	weight = weight ? weight.value : 1;
+	//console.log(weight);
 
-	var pathFinder = new PathFinder(from, to, this.dim, w);
+	var pathFinder = new PathFinder(from, to, this.dimension, weight);
 
 	pathFinder.setDeniedStates(this.walls);
 
-	var result = pathFinder.AEstrela();
-
+	var result = pathFinder.search();
+	
+	//
 	var endTime = new Date().getTime();
 
 	var time = endTime - startTime;

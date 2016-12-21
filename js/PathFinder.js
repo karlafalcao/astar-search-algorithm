@@ -202,7 +202,7 @@ PathFinder.prototype.expand = function(node) {
 	return successors;
 };
 
-PathFinder.prototype.AEstrela = function() {
+PathFinder.prototype.search = function() {
 	var node;
 	var successors;
 	var initialNode = new PFNode(this.initialState);
@@ -248,7 +248,7 @@ function init() {
 
 	var problemSolvingAgent = new PathFinder(initial, goal);
 
-	var result = problemSolvingAgent.AEstrela();
+	var result = problemSolvingAgent.search();
 	console.log(result);
 
 }
